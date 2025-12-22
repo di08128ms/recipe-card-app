@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>レシピカード（A5縦向き・印刷対応）</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    body {
+      font-family: "Yu Gothic", sans-serif;
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+      background-color: #f2f2f2;
+    }
+    form {
+      width: 340px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    textarea, input, button {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    #card {
+      width: 148mm;
+      height: 210mm;
+      padding: 25px;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    #holeMark {
+      position: absolute;
+      top: 15mm;
+      right: 15mm;
+      font-size: 12px;
+      color: #555;
+      user-select: none;
+    }
+    #card h1 {
+      font-size: 28px;
+      margin-bottom: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #card img {
+      max-width: 100%;
+      max-height: 130px;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+    .section-title {
+      font-weight: bold;
+      margin-top: 12px;
+      border-bottom: 1px solid #888;
+      font-size: 14px;
+    }
+    #cardIngredients {
+      font-size: 13.333px;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      column-count: 2;
+      column-gap: 20px;
+    }
+    #cardSteps {
+      font-size: 13.333px;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    .step-input {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .step-input input { flex: 1; }
+    .step-input button { width: 28px; }
+    button {
+      margin-top: 10px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    @media print {
+      body {
+        background: white;
+        display: block;
+        padding: 0;
+      }
+      form { display: none; }
+      #card {
+        box-shadow: none;
+        border: none;
+        margin: 0 auto;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <form id="recipeForm">
+    <label>タイトル</label>
+    <input type="text" id="title">
+    <label>料理画像（アップロード）</label>
+    <input type="file" id="imageUpload" accept="image/*">
+    <label>材料</label>
+    <textarea id="ingredients" rows="5" placeholder="例：卵 1個\n小麦粉 100g..."></textarea>
+    <label>作り方</label>
+    <div id="stepsContainer"></div>
+    <button type="button" onclick="addStep()">＋ ステップ追加</button>
+    <button type="button" onclick="updateCard()">カードを更新</button>
+    <button type="button" onclick="downloadCard()">画像として保存</button>
+    <button type="button" onclick="printCard()">印刷する</button>
+  </form>
+
+  <div id="card">
+    <div id="holeMark">＊</div>
+    <h1 id="cardTitle">レシピタイトル</h1>
+    <img id="cardImage" src="" alt="" style="display:none;">
+    <div class="section-title">材料</div>
+    <div id="cardIngredients">（ここに材料が表示されます）</div>
+    <div class="section-title">作り方</div>
+    <div id="cardSteps">（ここに手順が表示されます）</div>
+  </div>
+
+  <script>
+    function fitFontSizeToContainer(element, maxHeight, minFontSize = 9, initialSize = 13.333) {
+      let size = initialSize;
+      element.style.fontSize = size + "px";
+      while (element.scrollHeight > maxHeight && size > minFontSize) {
+        size -= 0.5;
+        element.style.fontSize = size + "px";
+      }
+    }
+    function fitTitleFontSize() {
+      const titleEl = document.getElementById("cardTitle");
+      let size = 28;
+      titleEl.style.fontSize = size + "px";
+      titleEl.style.whiteSpace = "nowrap";
+      const card = document.getElementById("card");
+      while (titleEl.scrollWidth > card.clientWidth - 50 && size > 14) {
+        size -= 1;
+        titleEl.style.fontSize = size + "px";
+      }
+    }
+    function addStep(value = "") {
+      const container = document.getElementById("stepsContainer");
+      const stepDiv = document.createElement("div");
+      stepDiv.className = "step-input";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = value;
+      input.placeholder = "工程を入力";
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.textContent = "−";
+      delBtn.onclick = () => stepDiv.remove();
+      stepDiv.appendChild(input);
+      stepDiv.appendChild(delBtn);
+      container.appendChild(stepDiv);
+    }
+    function getStepsText() {
+      const inputs = document.querySelectorAll("#stepsContainer input");
+      const numbers = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫","⑬","⑭","⑮"];
+      let steps = [];
+      inputs.forEach((input, index) => {
+        const val = input.value.trim();
+        if (val) steps.push(numbers[index] + " " + val);
+      });
+      return steps.join("\n");
+    }
+    function updateCard() {
+      const title = document.getElementById("title").value;
+      const ingredients = document.getElementById("ingredients").value;
+      const stepsText = getStepsText();
+      document.getElementById("cardTitle").textContent = title;
+      document.getElementById("cardIngredients").innerText = ingredients;
+      document.getElementById("cardSteps").innerText = stepsText;
+      fitTitleFontSize();
+    }
+    document.getElementById("imageUpload").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.getElementById("cardImage");
+        img.onload = () => updateCard();
+        img.src = e.target.result;
+        img.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    });
+    function downloadCard() {
+      html2canvas(document.getElementById("card")).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "recipe_card_A5_ring_print.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+    function printCard() {
+      updateCard();
+      window.print();
+    }
+    addStep();
+  </script>
+</body>
+</html>
