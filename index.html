@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Recipiece／お気に入りのレシピをカードに</title>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <style>
     :root{
       --w: 100mm;
       --h: 148mm;
       --pad: 6mm;
-      --bottom-gap: 5mm; /* 下から0.5cm */
+      --bottom-gap: 5mm;
       --dash: 2px dashed #000;
       --title-pt: 9pt;
       --ing-pt: 9pt;
@@ -25,25 +24,11 @@
       background:#f2f2f2;
     }
 
-    /* ===== HEADER / LOGO ===== */
-    .app-header{
-      width:100%;
-      margin:0 0 12px 0;
-    }
-    .app-logo{
-      height:28px; /* 24〜32pxで好み調整OK */
-      width:auto;
-      display:block;
-    }
+    .app-header{margin-bottom:12px;}
+    .app-logo{height:28px;}
 
-    /* ===== MAIN LAYOUT (preview left / form right) ===== */
-    .app-main{
-      display:flex;
-      gap:20px;
-      align-items:flex-start;
-    }
+    .app-main{display:flex;gap:20px;align-items:flex-start;}
 
-    /* ===== PREVIEW ===== */
     .preview{display:flex;gap:20px;}
 
     .page{
@@ -51,13 +36,12 @@
       height:var(--h);
       background:#fff;
       border:1px solid #bbb;
-      padding:var(--pad) var(--pad) var(--bottom-gap) var(--pad); /* ★下だけ5mm */
+      padding:var(--pad) var(--pad) var(--bottom-gap) var(--pad);
       box-sizing:border-box;
       overflow:hidden;
     }
 
-    /* Front uses flex to eliminate dead space */
-    .front-layout{
+    .front-layout,.back-layout{
       height:100%;
       display:flex;
       flex-direction:column;
@@ -68,53 +52,36 @@
       text-align:center;
       font-weight:800;
       font-size:var(--title-pt);
-      line-height:1.15;
+      margin-bottom:var(--v-gap);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      margin:0 0 var(--v-gap) 0;
-      flex: 0 0 auto;
-    }
-    .sep{
-      border-bottom:var(--dash);
-      margin:0 0 var(--v-gap) 0;
-      flex: 0 0 auto;
     }
 
+    .sep{border-bottom:var(--dash);margin-bottom:var(--v-gap);}
+
     .photo{
-      width:100%;
       aspect-ratio:4/3;
       border:1px solid #777;
       background:#e6e6e6;
+      margin-bottom:var(--v-gap);
       position:relative;
-      overflow:hidden;
-      margin:0 0 var(--v-gap) 0;
-      flex: 0 0 auto;
     }
     .photo img{width:100%;height:100%;object-fit:cover;display:none;}
     .photo-ph{
       position:absolute;inset:0;
       display:flex;align-items:center;justify-content:center;
-      color:#fff;font-weight:800;font-size:10pt;
-      text-shadow:0 1px 2px rgba(0,0,0,.35);
+      color:#fff;font-weight:800;
     }
 
-    /* Ingredients fills remaining height */
     .ing-wrap{
-      padding:4pt 2pt 3pt 2pt; /* ★下に少し余白を足して見切れ防止 */
-      box-sizing:border-box;
+      flex:1;
       overflow:hidden;
-      flex: 1 1 auto;
-      min-height:0;
+      padding:3pt 2pt;
     }
-    .ing-head{
-      text-align:center;
-      font-weight:800;
-      font-size:9pt;
-      margin:0 0 4pt 0;
-      line-height:1.1;
-    }
-    .ing-sep{border-bottom:var(--dash);margin:0 0 4pt 0;}
+
+    .ing-head{text-align:center;font-weight:800;font-size:9pt;margin-bottom:4pt;}
+    .ing-sep{border-bottom:var(--dash);margin-bottom:4pt;}
 
     table.ing-table{
       width:100%;
@@ -122,40 +89,34 @@
       font-size:var(--ing-pt);
       line-height:1.35;
     }
-    .ing-table td{padding:1pt 0;white-space:nowrap;vertical-align:top;}
-    .ing-name{width:65%;overflow:hidden;text-overflow:ellipsis;padding-right:4pt;}
+    .ing-table td{padding:1pt 0;vertical-align:top;}
+    .ing-name{width:65%;}
     .ing-amount{width:35%;text-align:right;}
 
-    /* Back */
-    .back-layout{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      min-height:0;
+    .ing-header{
+      font-weight:800;
+      font-size:8.5pt;
+      padding:3pt 0 2pt 0;
     }
+
     .step-list{list-style:none;padding:0;margin:0;font-size:11.5pt;line-height:1.5;}
-    .step-item{display:flex;gap:2.5mm;margin-bottom:2.4mm;align-items:flex-start;}
+    .step-item{display:flex;gap:2.5mm;margin-bottom:2.4mm;}
     .step-num{
       width:5mm;height:5mm;background:#000;color:#fff;
       display:flex;align-items:center;justify-content:center;
-      font-weight:800;font-size:10pt;flex:0 0 auto;
-      border-radius:1px;margin-top:0.4mm;
-    }
-    .steps-wrap{
-      overflow:hidden;
-      flex: 1 1 auto;
-      min-height:0;
+      font-weight:800;font-size:10pt;
     }
 
-    /* ===== FORM ===== */
     form{
-      width:420px;background:#fff;border:1px solid #ddd;
-      border-radius:12px;padding:14px;
-      box-shadow:0 4px 16px rgba(0,0,0,.06);
+      width:420px;
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:12px;
+      padding:14px;
     }
+
     label{font-weight:700;font-size:13px;margin-top:10px;display:block;}
-    input,textarea{width:100%;box-sizing:border-box;font-size:14px;}
-    textarea{resize:vertical;}
+    input{width:100%;font-size:14px;}
 
     .ing-row{
       display:grid;
@@ -163,234 +124,151 @@
       gap:6px;
       margin-top:6px;
     }
-    .ing-row button{width:36px;}
+
     .step-input{display:flex;gap:6px;margin-top:6px;}
-    .step-input input{flex:1;}
-    .step-input button{width:36px;}
 
     @media print{
-      body{background:#fff;padding:0;margin:0;}
-      .app-header{display:none !important;} /* ★印刷ではロゴ非表示 */
-      form{display:none !important;}
-
-      /* 印刷時だけ横並びを解除して縦に積む（=表→裏で2ページ） */
-      .preview{display:block !important;}
-      .page{
-        border:none !important;
-        display:block !important;
-        width:100mm !important;
-        height:148mm !important;
-        page-break-after:always !important;
-        break-after:page !important;
-      }
-      .page:last-child{
-        page-break-after:auto !important;
-        break-after:auto !important;
-      }
+      body{padding:0;background:#fff;}
+      .app-header,form{display:none;}
+      .preview{display:block;}
+      .page{page-break-after:always;border:none;}
+      .page:last-child{page-break-after:auto;}
       @page{size:100mm 148mm;margin:0;}
     }
   </style>
 </head>
+
 <body>
 
-  <!-- ロゴ（HTMLファイルと同じフォルダに logo_Recipiece.png を置いてください） -->
-  <header class="app-header">
-    <img src="logo_Recipiece.png" alt="Recipiece" class="app-logo">
-  </header>
+<header class="app-header">
+  <img src="logo_Recipiece.png" alt="Recipiece" class="app-logo">
+</header>
 
-  <!-- ここからが横並び（左：プレビュー / 右：入力） -->
-  <div class="app-main">
+<div class="app-main">
 
-    <div class="preview">
-      <!-- FRONT -->
-      <div class="page">
-        <div class="front-layout">
-          <div class="title" id="frontTitle">レシピタイトル</div>
-          <div class="sep"></div>
+<div class="preview">
+  <div class="page">
+    <div class="front-layout">
+      <div class="title" id="frontTitle">レシピタイトル</div>
+      <div class="sep"></div>
 
-          <div class="photo">
-            <img id="frontImg" alt="">
-            <div class="photo-ph" id="ph">※料理の写真</div>
-          </div>
-
-          <div class="ing-wrap" id="frontIngWrap">
-            <div class="ing-head">材料 <span id="frontServ">○人分</span></div>
-            <div class="ing-sep"></div>
-            <table class="ing-table" id="frontIngTable"></table>
-          </div>
-        </div>
+      <div class="photo">
+        <img id="frontImg">
+        <div class="photo-ph" id="ph">※料理の写真</div>
       </div>
 
-      <!-- BACK -->
-      <div class="page">
-        <div class="back-layout">
-          <div class="title">作り方</div>
-          <div class="sep"></div>
-          <div class="steps-wrap">
-            <ul class="step-list" id="backSteps"></ul>
-          </div>
-        </div>
+      <div class="ing-wrap" id="frontIngWrap">
+        <div class="ing-head">材料 <span id="frontServ">○人分</span></div>
+        <div class="ing-sep"></div>
+        <table class="ing-table" id="frontIngTable"></table>
       </div>
     </div>
-
-    <form>
-      <label>タイトル</label>
-      <input id="title" placeholder="例：豆腐と春雨の中華風煮込み">
-
-      <label>画像</label>
-      <input type="file" id="imgUp" accept="image/*">
-
-      <label>人数</label>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <input id="serv" type="number" min="1" step="1" style="width:80px;">
-        <span>人分</span>
-      </div>
-
-      <label>材料（材料／分量）</label>
-      <div id="ingredients"></div>
-      <button type="button" onclick="addIngredient()">＋材料追加</button>
-
-      <label>作り方</label>
-      <div id="steps"></div>
-      <button type="button" onclick="addStep()">＋工程追加</button>
-
-      <button type="button" onclick="window.print()" style="margin-top:10px;">🖨 印刷</button>
-    </form>
-
   </div>
 
+  <div class="page">
+    <div class="back-layout">
+      <div class="title">作り方</div>
+      <div class="sep"></div>
+      <ul class="step-list" id="backSteps"></ul>
+    </div>
+  </div>
+</div>
+
+<form>
+  <label>タイトル</label>
+  <input id="title">
+
+  <label>画像</label>
+  <input type="file" id="imgUp">
+
+  <label>人数</label>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <input id="serv" type="number" style="width:80px;">
+    <span>人分</span>
+  </div>
+
+  <label>材料</label>
+  <div id="ingredients"></div>
+  <button type="button" onclick="addIngredient()">＋材料</button>
+  <button type="button" onclick="addIngHeader()">＋見出し</button>
+
+  <label>作り方</label>
+  <div id="steps"></div>
+  <button type="button" onclick="addStep()">＋工程</button>
+
+  <button type="button" onclick="window.print()">🖨 印刷</button>
+</form>
+
+</div>
+
 <script>
-function addIngredient(name="", amount=""){
-  const row=document.createElement("div");
-  row.className="ing-row";
-
-  const n=document.createElement("input");
-  n.placeholder="材料";
-  n.value=name;
-  n.oninput=update;
-
-  const a=document.createElement("input");
-  a.placeholder="分量";
-  a.value=amount;
-  a.oninput=update;
-
-  const b=document.createElement("button");
-  b.type="button";
-  b.textContent="−";
-  b.onclick=()=>{row.remove(); update();};
-
-  row.append(n,a,b);
-  ingredients.append(row);
+function addIngredient(){
+  const r=document.createElement("div");
+  r.className="ing-row";
+  r.dataset.type="item";
+  r.innerHTML='<input placeholder="材料"><input placeholder="分量"><button>−</button>';
+  r.querySelector("button").onclick=()=>{r.remove();update();}
+  r.querySelectorAll("input").forEach(i=>i.oninput=update);
+  ingredients.append(r);
 }
 
-function addStep(v=""){
+function addIngHeader(){
+  const r=document.createElement("div");
+  r.className="ing-row";
+  r.dataset.type="header";
+  r.innerHTML='<input placeholder="見出し"><div></div><button>−</button>';
+  r.querySelector("button").onclick=()=>{r.remove();update();}
+  r.querySelector("input").oninput=update;
+  ingredients.append(r);
+}
+
+function addStep(){
   const d=document.createElement("div");
   d.className="step-input";
-
-  const i=document.createElement("input");
-  i.value=v;
-  i.placeholder="工程を入力";
-  i.oninput=update;
-
-  const b=document.createElement("button");
-  b.type="button";
-  b.textContent="−";
-  b.onclick=()=>{d.remove(); update();};
-
-  d.append(i,b);
+  d.innerHTML='<input><button>−</button>';
+  d.querySelector("button").onclick=()=>{d.remove();update();}
+  d.querySelector("input").oninput=update;
   steps.append(d);
 }
 
-function autoShrinkSteps(){
-  const wrap = document.querySelector(".steps-wrap");
-  const list = document.getElementById("backSteps");
-  if(!wrap || !list) return;
-
-  let size = 11.5; // initial
-  list.style.fontSize = size + "pt";
-
-  const available = wrap.clientHeight - 4; // safety margin
-
-  while(list.scrollHeight > available && size > 8.0){
-    size -= 0.5;
-    list.style.fontSize = size + "pt";
-  }
-}
-
-function autoShrinkIngredients(){
-  const wrap=document.getElementById("frontIngWrap");
-  const head=wrap.querySelector(".ing-head");
-  const sep=wrap.querySelector(".ing-sep");
-  const table=document.getElementById("frontIngTable");
-
-  let size=9.0;
-  table.style.fontSize=size+"pt";
-
-  const available = wrap.clientHeight - head.offsetHeight - sep.offsetHeight - 6; // safety margin
-
-  while(table.scrollHeight > available && size > 6.0){
-    size -= 0.5;
-    table.style.fontSize = size + "pt";
-  }
-}
-
 function update(){
-  frontTitle.textContent = title.value || "レシピタイトル";
-  frontServ.textContent  = serv.value ? (serv.value + "人分") : "○人分";
+  frontTitle.textContent=title.value||"レシピタイトル";
+  frontServ.textContent=serv.value?serv.value+"人分":"○人分";
 
-  // ingredients table
-  frontIngTable.innerHTML = "";
-  [...ingredients.children].forEach(row=>{
-    const inputs=row.querySelectorAll("input");
-    const name = (inputs[0]?.value||"").trim();
-    const amt  = (inputs[1]?.value||"").trim();
-    if(!name && !amt) return;
-    frontIngTable.insertAdjacentHTML("beforeend",
-      `<tr><td class="ing-name">${escapeHtml(name)}</td><td class="ing-amount">${escapeHtml(amt)}</td></tr>`
-    );
+  frontIngTable.innerHTML="";
+  [...ingredients.children].forEach(r=>{
+    const t=r.dataset.type;
+    const i=r.querySelectorAll("input");
+    if(t==="header"){
+      if(i[0].value)
+        frontIngTable.innerHTML+=`<tr><td colspan="2" class="ing-header">${i[0].value}</td></tr>`;
+    }else{
+      if(i[0].value||i[1].value)
+        frontIngTable.innerHTML+=`<tr><td>${i[0].value}</td><td class="ing-amount">${i[1].value}</td></tr>`;
+    }
   });
 
-  // steps
-  backSteps.innerHTML = "";
+  backSteps.innerHTML="";
   [...steps.querySelectorAll("input")].forEach((i,n)=>{
-    const v=i.value.trim();
-    if(!v) return;
-    backSteps.insertAdjacentHTML("beforeend",
-      `<li class="step-item"><div class="step-num">${n+1}</div><div>${escapeHtml(v)}</div></li>`
-    );
+    if(i.value)
+      backSteps.innerHTML+=`<li class="step-item"><div class="step-num">${n+1}</div><div>${i.value}</div></li>`;
   });
-
-  autoShrinkIngredients();
-  autoShrinkSteps();
 }
 
-function escapeHtml(str){
-  return str.replace(/[&<>"']/g, (m) => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-  }[m]));
-}
-
-imgUp.onchange = (e) => {
+imgUp.onchange=e=>{
   const f=e.target.files[0];
-  if(!f) return;
+  if(!f)return;
   const r=new FileReader();
-  r.onload = (ev) => {
-    frontImg.src = ev.target.result;
-    frontImg.style.display = "block";
-    ph.style.display = "none";
+  r.onload=ev=>{
+    frontImg.src=ev.target.result;
+    frontImg.style.display="block";
+    ph.style.display="none";
   };
   r.readAsDataURL(f);
 };
 
-title.oninput = serv.oninput = update;
-
-window.addEventListener("resize", () => {
-  autoShrinkIngredients();
-  autoShrinkSteps();
-});
-
-addIngredient(); addIngredient();
-addStep(); addStep();
+addIngredient();addIngredient();
+addStep();addStep();
 update();
 </script>
 
