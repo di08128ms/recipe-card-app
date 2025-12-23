@@ -37,7 +37,6 @@ body{
   border:1px solid #bbb;
   padding:var(--pad) var(--pad) var(--bottom-gap);
   box-sizing:border-box;
-  overflow:hidden;
 }
 
 .front-layout,.back-layout{
@@ -56,25 +55,19 @@ body{
   text-overflow:ellipsis;
 }
 
-.sep{border-bottom:var(--dash);margin-bottom:var(--v-gap);}
+.sep{border-bottom:2px dashed #000;margin-bottom:var(--v-gap);}
 
-/* ===== PHOTO (max 6cm height) ===== */
+/* ===== PHOTO ===== */
 .photo{
   width:100%;
-  max-height:60mm; /* ★6cm制限 */
+  max-height:60mm;
   border:1px solid #777;
   background:#e6e6e6;
   position:relative;
   overflow:hidden;
   margin-bottom:var(--v-gap);
-  flex:0 0 auto;
 }
-.photo img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:none;
-}
+.photo img{width:100%;height:100%;object-fit:cover;display:none;}
 .photo-ph{
   position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
@@ -84,22 +77,45 @@ body{
 /* ===== INGREDIENTS ===== */
 .ing-wrap{
   flex:1;
-  overflow:hidden;
-  padding:3pt 2pt;
+  padding:3pt 2pt 6pt 2pt; /* ★下に安全余白 */
+  box-sizing:border-box;
 }
-.ing-head{text-align:center;font-weight:800;font-size:9pt;margin-bottom:4pt;}
-.ing-sep{border-bottom:var(--dash);margin-bottom:4pt;}
 
-table.ing-table{
+.ing-head{text-align:center;font-weight:800;font-size:9pt;margin-bottom:4pt;}
+.ing-sep{border-bottom:2px dashed #000;margin-bottom:4pt;}
+
+.ing-table{
   width:100%;
   border-collapse:collapse;
   font-size:var(--ing-pt);
-  line-height:1.35;
 }
-.ing-table td{padding:1pt 0;}
-.ing-name{width:65%;}
-.ing-amount{width:35%;text-align:right;}
-.ing-header{font-weight:800;font-size:8.5pt;padding:3pt 0 2pt;}
+
+.ing-row-view{
+  display:flex;
+  align-items:flex-end;
+  gap:4pt;
+}
+
+.ing-name{
+  white-space:nowrap;
+}
+
+.ing-dots{
+  flex:1;
+  border-bottom:var(--dash);
+  transform:translateY(-2pt);
+}
+
+.ing-amount{
+  white-space:nowrap;
+  text-align:right;
+}
+
+.ing-header{
+  font-weight:800;
+  font-size:8.5pt;
+  padding:4pt 0 2pt;
+}
 
 /* ===== STEPS ===== */
 .step-list{list-style:none;padding:0;margin:0;font-size:11.5pt;line-height:1.5;}
@@ -239,17 +255,26 @@ function update(){
   [...ingredients.children].forEach(r=>{
     const i=r.querySelectorAll("input");
     if(r.dataset.type==="header"){
-      if(i[0].value) frontIngTable.innerHTML+=
-        `<tr><td colspan="2" class="ing-header">${i[0].value}</td></tr>`;
+      if(i[0].value)
+        frontIngTable.innerHTML+=
+        `<tr><td colspan="3" class="ing-header">${i[0].value}</td></tr>`;
     }else{
-      if(i[0].value||i[1].value) frontIngTable.innerHTML+=
-        `<tr><td class="ing-name">${i[0].value}</td><td class="ing-amount">${i[1].value}</td></tr>`;
+      if(i[0].value||i[1].value)
+        frontIngTable.innerHTML+=
+        `<tr><td colspan="3">
+          <div class="ing-row-view">
+            <span class="ing-name">${i[0].value}</span>
+            <span class="ing-dots"></span>
+            <span class="ing-amount">${i[1].value}</span>
+          </div>
+        </td></tr>`;
     }
   });
 
   backSteps.innerHTML="";
   [...steps.querySelectorAll("input")].forEach((i,n)=>{
-    if(i.value) backSteps.innerHTML+=
+    if(i.value)
+      backSteps.innerHTML+=
       `<li class="step-item"><div class="step-num">${n+1}</div><div>${i.value}</div></li>`;
   });
 }
