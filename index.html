@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Recipiece</title>
+  <title>Recipiece／お気に入りのレシピをカードに</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     :root{
@@ -241,7 +241,10 @@
       <input type="file" id="imgUp" accept="image/*">
 
       <label>人数</label>
-      <input id="serv" placeholder="例：2人分">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input id="serv" type="number" min="1" step="1" style="width:80px;">
+        <span>人分</span>
+      </div>
 
       <label>材料（材料／分量）</label>
       <div id="ingredients"></div>
@@ -333,7 +336,7 @@ function autoShrinkIngredients(){
 
 function update(){
   frontTitle.textContent = title.value || "レシピタイトル";
-  frontServ.textContent  = serv.value  || "○人分";
+  frontServ.textContent  = serv.value ? (serv.value + "人分") : "○人分";
 
   // ingredients table
   frontIngTable.innerHTML = "";
